@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabaseServerClient from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function proxy(request: NextRequest) {
-  const { data: user } = await supabaseServerClient.auth.getUser();
+  const supabase = await createSupabaseServerClient();
+  const { data: user } = await supabase.auth.getUser();
 
   if (!user && request.nextUrl.pathname.startsWith("/crm")) {
     const url = request.nextUrl.clone();
