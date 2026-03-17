@@ -6,5 +6,3 @@ const supabase = createBrowserClient(
 );
 
 export default supabase;
-
-// supabase.auth.signInWithPassword({ email, password })
