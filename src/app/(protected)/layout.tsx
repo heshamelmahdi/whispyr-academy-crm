@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { prisma } from "@/lib/prisma"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { QueryProvider } from "@/providers/query-provider"
 import { redirect } from "next/navigation"
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -23,10 +24,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar role={profile.role} user={profile} />
-      {children}
-    </SidebarProvider>
+    <QueryProvider>
+      <SidebarProvider>
+        <AppSidebar role={profile.role} user={profile} />
+        {children}
+      </SidebarProvider>
+    </QueryProvider>
 
   )
 }
