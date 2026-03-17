@@ -31,7 +31,7 @@ export default function Login() {
       return
     }
 
-    router.push("/crm");
+    router.push("/dashboard");
     router.refresh()
     setLoading(false)
   }
