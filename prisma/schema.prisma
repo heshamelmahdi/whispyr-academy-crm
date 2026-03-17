@@ -23,7 +23,8 @@ model Profile {
 
   isActive Boolean @default(true)
 
-  leads Lead[]
+  leads      Lead[]
+  activities Activity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,6 +49,8 @@ model Lead {
   assignedToId String?
   assignedTo   Profile? @relation(fields: [assignedToId], references: [id])
 
+  activities Activity[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -63,4 +66,32 @@ enum LeadStage {
   CONTACTED
   QUALIFIED
   NEGOTIATING
+}
+
+model Activity {
+  id String @id @default(uuid())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id])
+
+  actorId String
+  actor   Profile @relation(fields: [actorId], references: [id])
+
+  content String
+  type    ActivityType
+
+  createdAt DateTime @default(now())
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  NOTE
+  CALL_ATTEMPT
+  STATUS_CHANGE
+  STAGE_CHANGE
+  ASSIGNMENT_CHANGE
+  REMINDER_CREATED
+  ATTACHMENT_ADDED
+  AI_LEAD_BRIEF_GENERATED
+  AI_FOLLOWUP_DRAFT_GENERATED
 }
