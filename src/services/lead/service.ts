@@ -1,6 +1,6 @@
 import { Prisma, Profile, Role } from "@/generated/prisma/client";
-import { ListLeadsParams } from "./schema";
-import { dbListLeads } from "./db";
+import { CreateLeadRequest, ListLeadsParams } from "./schema";
+import { dbCreateLead, dbListLeads } from "./db";
 
 export async function listLeads(profile: Profile, params: ListLeadsParams) {
   // Build where clause
@@ -10,4 +10,8 @@ export async function listLeads(profile: Profile, params: ListLeadsParams) {
   }
 
   return dbListLeads(where, params);
+}
+
+export async function createLead(profile: Profile, data: CreateLeadRequest) {
+  return dbCreateLead(profile, data);
 }

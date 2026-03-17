@@ -77,7 +77,7 @@ model Activity {
   actorId String
   actor   Profile @relation(fields: [actorId], references: [id])
 
-  content String
+  content String?
   type    ActivityType
 
   createdAt DateTime @default(now())
