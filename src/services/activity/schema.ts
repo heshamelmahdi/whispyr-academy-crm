@@ -2,6 +2,8 @@ import { ActivityType, LeadStage, LeadStatus } from "@/generated/prisma/enums";
 import { PaginationMeta } from "@/utils/pagination";
 import { z } from "zod";
 
+const leadStatusSchema = z.enum(LeadStatus);
+const leadStageSchema = z.enum(LeadStage);
 const createActivitySchema = z
   .object({
     leadId: z.uuid(),
@@ -24,16 +26,16 @@ const createActivitySchema = z
 
       switch (data.type) {
         case ActivityType.STATUS_CHANGE:
-          data.meta.from = z.enum(LeadStatus);
-          data.meta.to = z.enum(LeadStatus);
+          data.meta.from = leadStatusSchema.parse(data.meta.from);
+          data.meta.to = leadStatusSchema.parse(data.meta.to);
           break;
         case ActivityType.STAGE_CHANGE:
-          data.meta.from = z.enum(LeadStage);
-          data.meta.to = z.enum(LeadStage);
+          data.meta.from = leadStageSchema.parse(data.meta.from);
+          data.meta.to = leadStageSchema.parse(data.meta.to);
           break;
         case ActivityType.ASSIGNMENT_CHANGE:
-          data.meta.from = z.string(); // agent name
-          data.meta.to = z.string(); // agent name
+          data.meta.from = z.string().parse(data.meta.from); // agent name
+          data.meta.to = z.string().parse(data.meta.to); // agent name
           break;
         default:
           break;
@@ -54,6 +56,7 @@ export const getLeadActivitiesSchema = z.object({
 export type GetLeadActivitiesRequest = z.infer<typeof getLeadActivitiesSchema>;
 
 interface ActivitySummaryItem {
+  id: string;
   actor: {
     name: string;
   };

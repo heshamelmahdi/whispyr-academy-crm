@@ -43,6 +43,7 @@ export async function dbGetLeadActivities(
         content: true,
         type: true,
         createdAt: true,
+        id: true,
         actor: {
           select: {
             name: true,

@@ -13,6 +13,8 @@ export function buildActivityContent(
     return null;
   }
 
+  console.log(meta);
+
   switch (activityType) {
     case ActivityType.STATUS_CHANGE:
       return `Status changed from ${meta.from} to ${meta.to}`;

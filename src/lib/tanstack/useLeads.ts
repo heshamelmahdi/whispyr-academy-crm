@@ -55,6 +55,9 @@ export function useEditLead(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead", id] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({
+        queryKey: ["activities", { leadId: id }],
+      });
     },
   });
 }

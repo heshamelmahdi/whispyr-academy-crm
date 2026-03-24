@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Inbox } from "lucide-react";
 
 import { Role } from "@/generated/prisma/client";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useGetLeads } from "@/lib/tanstack/useLeads";
 import { CreateLeadDialog } from "@/components/leads/create-lead-dialog";
-import { StageBadge, StatusBadge } from "@/components/leads/reusable";
+import { Pagination, StageBadge, StatusBadge } from "@/components/leads/reusable";
 
 export function LeadsPageClient({ role }: { role: Role }) {
   const [page, setPage] = useState(1);
@@ -66,89 +65,58 @@ export function LeadsPageClient({ role }: { role: Role }) {
             <>
               <Table>
                 <TableHeader className="[&_tr]:border-slate-200">
-                <TableRow>
-                  <TableHead className="bg-slate-50/80 px-6 text-[11px] tracking-[0.18em] text-slate-500">Name</TableHead>
-                  <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Email</TableHead>
-                  <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Phone</TableHead>
-                  <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Status</TableHead>
-                  <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Stage</TableHead>
-                  {isManagerOrAdmin ? (
-                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">
-                      Assigned Agent
-                    </TableHead>
-                  ) : null}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leads.map((lead) => (
-                  <TableRow key={lead.id} className="border-slate-200 hover:bg-slate-50/80">
-                    <TableCell className="px-6 py-4 font-medium text-slate-900">
-                      <Link
-                        href={`/leads/${lead.id}`}
-                        className="transition-colors hover:text-primary hover:underline"
-                      >
-                        {lead.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="px-5 py-4 text-slate-600">{lead.email}</TableCell>
-                    <TableCell className="px-5 py-4 text-slate-600">{lead.phone}</TableCell>
-                    <TableCell className="px-5 py-4">
-                      <StatusBadge status={lead.status} />
-                    </TableCell>
-                    <TableCell className="px-5 py-4">
-                      <StageBadge stage={lead.stage} />
-                    </TableCell>
+                  <TableRow>
+                    <TableHead className="bg-slate-50/80 px-6 text-[11px] tracking-[0.18em] text-slate-500">Name</TableHead>
+                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Email</TableHead>
+                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Phone</TableHead>
+                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Status</TableHead>
+                    <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">Stage</TableHead>
                     {isManagerOrAdmin ? (
-                      <TableCell className="px-5 py-4">
-                        {lead.assignedTo ? (
-                          <div className="space-y-1">
-                            <p className="font-medium text-slate-900">{lead.assignedTo.name}</p>
-                            <p className="text-xs text-slate-500">
-                              {lead.assignedTo.email}
-                            </p>
-                          </div>
-                        ) : (
-                          <span className="text-slate-500">Unassigned</span>
-                        )}
-                      </TableCell>
+                      <TableHead className="bg-slate-50/80 px-5 text-[11px] tracking-[0.18em] text-slate-500">
+                        Assigned Agent
+                      </TableHead>
                     ) : null}
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableHeader>
+                <TableBody>
+                  {leads.map((lead) => (
+                    <TableRow key={lead.id} className="border-slate-200 hover:bg-slate-50/80">
+                      <TableCell className="px-6 py-4 font-medium text-slate-900">
+                        <Link
+                          href={`/leads/${lead.id}`}
+                          className="transition-colors hover:text-primary hover:underline"
+                        >
+                          {lead.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 text-slate-600">{lead.email}</TableCell>
+                      <TableCell className="px-5 py-4 text-slate-600">{lead.phone}</TableCell>
+                      <TableCell className="px-5 py-4">
+                        <StatusBadge status={lead.status} />
+                      </TableCell>
+                      <TableCell className="px-5 py-4">
+                        <StageBadge stage={lead.stage} />
+                      </TableCell>
+                      {isManagerOrAdmin ? (
+                        <TableCell className="px-5 py-4">
+                          {lead.assignedTo ? (
+                            <div className="space-y-1">
+                              <p className="font-medium text-slate-900">{lead.assignedTo.name}</p>
+                              <p className="text-xs text-slate-500">
+                                {lead.assignedTo.email}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-slate-500">Unassigned</span>
+                          )}
+                        </TableCell>
+                      ) : null}
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
 
-              <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-slate-500">
-                  Showing {startItem}-{endItem} of {total} leads
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    className="rounded-xl bg-white"
-                    onClick={() =>
-                      setPage((currentPage) => Math.max(1, currentPage - 1))
-                    }
-                    disabled={isLoading || page <= 1}
-                  >
-                    Previous
-                  </Button>
-                  <div className="text-sm text-slate-500">
-                    Page {page} of {Math.max(pageCount, 1)}
-                  </div>
-                  <Button
-                    className="rounded-xl shadow-sm"
-                    onClick={() =>
-                      setPage((currentPage) =>
-                        Math.min(Math.max(pageCount, 1), currentPage + 1),
-                      )
-                    }
-                    disabled={isLoading || page >= Math.max(pageCount, 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <Pagination startItem={startItem} endItem={endItem} total={total} page={page} pageCount={pageCount} isLoading={isLoading} setPage={setPage} />
             </>
           ) : (
             <div className="px-6 py-6">
