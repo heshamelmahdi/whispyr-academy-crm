@@ -8,7 +8,7 @@ import {
   ListLeadsResponseData,
 } from "./schema";
 import { Prisma, Profile, Role } from "@/generated/prisma/client";
-import { buildPagination } from "./helpers";
+import { buildPagination } from "@/utils/pagination";
 
 const assigneeSelect = {
   id: true,

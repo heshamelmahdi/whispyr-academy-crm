@@ -1,15 +1,6 @@
 import { ActivityType, Lead } from "@/generated/prisma/client";
 import { CreateActivityRequest } from "../activity";
 
-export function buildPagination(total: number, page: number, pageSize: number) {
-  return {
-    page,
-    pageSize,
-    total,
-    pages: Math.ceil(total / pageSize),
-  };
-}
-
 interface BuildLeadChangeActivitiesParams {
   leadId: string;
   actorId: string;

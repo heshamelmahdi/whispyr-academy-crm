@@ -1,4 +1,4 @@
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, Role } from "@/generated/prisma/client";
 import { dbCreateActivities, dbGetLeadActivities } from "./db";
 import { buildActivityContent } from "./helpers";
 import {
@@ -6,6 +6,8 @@ import {
   createManyActivitiesSchema,
   GetLeadActivitiesRequest,
 } from "./schema";
+import { buildPagination } from "@/utils/pagination";
+import { UserSnapshot } from "@/utils/types/user";
 
 export async function createActivities(
   request: CreateActivityRequest[],
@@ -38,14 +40,27 @@ export async function createActivities(
   };
 }
 
-export async function getLeadActivities(request: GetLeadActivitiesRequest) {
-  return await dbGetLeadActivities(
-    {
-      leadId: request.leadId,
-    },
-    {
-      page: request.page,
-      pageSize: request.pageSize,
-    },
-  );
+export async function getLeadActivities(
+  request: GetLeadActivitiesRequest,
+  userSnapshot: UserSnapshot,
+) {
+  const where: Prisma.ActivityWhereInput = {
+    leadId: request.leadId,
+  };
+
+  if (userSnapshot.role === Role.AGENT) {
+    where.lead = {
+      assignedToId: userSnapshot.id,
+    };
+  }
+
+  const result = await dbGetLeadActivities(where, {
+    page: request.page,
+    pageSize: request.pageSize,
+  });
+
+  return {
+    activities: result.activities,
+    pagination: buildPagination(result.total, request.page, request.pageSize),
+  };
 }

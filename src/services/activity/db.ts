@@ -33,12 +33,30 @@ export async function dbGetLeadActivities(
     pageSize: number;
   },
 ) {
-  return await prisma.activity.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: params.pageSize,
-    skip: (params.page - 1) * params.pageSize,
-  });
+  const [activities, total] = await Promise.all([
+    prisma.activity.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        content: true,
+        type: true,
+        createdAt: true,
+        actor: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      take: params.pageSize,
+      skip: (params.page - 1) * params.pageSize,
+    }),
+    prisma.activity.count({ where }),
+  ]);
+
+  return {
+    activities,
+    total,
+  };
 }

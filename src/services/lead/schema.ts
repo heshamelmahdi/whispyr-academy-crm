@@ -1,4 +1,5 @@
 import { LeadStage, LeadStatus } from "@/generated/prisma/enums";
+import { PaginationMeta } from "@/utils/pagination";
 import { z } from "zod";
 
 export const listLeadsQuerySchema = z.object({
@@ -38,13 +39,6 @@ export interface LeadAssigneeSummary {
   id: string;
   name: string;
   email: string;
-}
-
-export interface PaginationMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-  pages: number;
 }
 
 export interface LeadSummary {
