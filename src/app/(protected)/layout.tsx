@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
+import { AppShell } from "@/components/app-shell"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { prisma } from "@/lib/prisma"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -27,7 +28,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     <QueryProvider>
       <SidebarProvider>
         <AppSidebar role={profile.role} user={profile} />
-        {children}
+        <AppShell role={profile.role} email={profile.email}>
+          {children}
+        </AppShell>
       </SidebarProvider>
     </QueryProvider>
 
