@@ -1,21 +1,81 @@
 import { prisma } from "@/lib/prisma";
-import { CreateLeadRequest, ListLeadsParams } from "./schema";
-import { ActivityType, Prisma, Profile } from "@/generated/prisma/client";
+import {
+  CreateLeadRequest,
+  EditLeadRequest,
+  LeadAssigneeSummary,
+  LeadDetail,
+  ListLeadsParams,
+  ListLeadsResponseData,
+} from "./schema";
+import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
+import { buildPagination } from "./helpers";
+
+const assigneeSelect = {
+  id: true,
+  name: true,
+  email: true,
+} satisfies Prisma.ProfileSelect;
+
+const leadSummarySelect = {
+  id: true,
+  name: true,
+  phone: true,
+  email: true,
+  stage: true,
+  status: true,
+  createdAt: true,
+  assignedToId: true,
+  assignedTo: {
+    select: assigneeSelect,
+  },
+} satisfies Prisma.LeadSelect;
+
+const leadDetailSelect = {
+  ...leadSummarySelect,
+  updatedAt: true,
+} satisfies Prisma.LeadSelect;
 
 export async function dbListLeads(
   where: Prisma.LeadWhereInput,
   params: ListLeadsParams,
-) {
-  const leads = await prisma.lead.findMany({
-    where,
-    take: params.pageSize,
-    skip: (params.page - 1) * params.pageSize,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+): Promise<ListLeadsResponseData> {
+  const [leads, total] = await Promise.all([
+    prisma.lead.findMany({
+      where,
+      select: leadSummarySelect,
+      take: params.pageSize,
+      skip: (params.page - 1) * params.pageSize,
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.lead.count({ where }),
+  ]);
 
-  return leads;
+  return {
+    leads,
+    pagination: buildPagination(total, params.page, params.pageSize),
+  };
+}
+
+export async function dbGetLeadById(id: string): Promise<LeadDetail | null> {
+  return prisma.lead.findUnique({
+    where: { id },
+    select: leadDetailSelect,
+  });
+}
+
+export async function dbFindAssignableAgentById(
+  id: string,
+): Promise<LeadAssigneeSummary | null> {
+  return prisma.profile.findFirst({
+    where: {
+      id,
+      role: Role.AGENT,
+      isActive: true,
+    },
+    select: assigneeSelect,
+  });
 }
 
 export async function dbCreateLead(profile: Profile, data: CreateLeadRequest) {
@@ -37,6 +97,31 @@ export async function dbCreateLead(profile: Profile, data: CreateLeadRequest) {
       },
     });
 
-    return lead;
+    return tx.lead.findUniqueOrThrow({
+      where: { id: lead.id },
+      select: leadDetailSelect,
+    });
+  });
+}
+
+export async function dbUpdateLead(
+  id: string,
+  data: EditLeadRequest,
+  activities: Prisma.ActivityCreateManyInput[],
+) {
+  return prisma.$transaction(async (tx) => {
+    const updatedLead = await tx.lead.update({
+      where: { id },
+      data,
+      select: leadDetailSelect,
+    });
+
+    if (activities.length > 0) {
+      await tx.activity.createMany({
+        data: activities,
+      });
+    }
+
+    return updatedLead;
   });
 }

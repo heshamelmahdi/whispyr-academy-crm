@@ -1,3 +1,4 @@
+import { LeadStage, LeadStatus } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 export const listLeadsQuerySchema = z.object({
@@ -15,3 +16,54 @@ export const createLeadSchema = z.object({
 });
 
 export type CreateLeadRequest = z.infer<typeof createLeadSchema>;
+
+export const leadIdParamsSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export type LeadIdParams = z.infer<typeof leadIdParamsSchema>;
+
+export const editLeadSchema = z.object({
+  name: z.string().min(1).optional(),
+  phone: z.string().min(8).max(15).optional(),
+  email: z.email().optional(),
+  stage: z.nativeEnum(LeadStage).optional(),
+  status: z.nativeEnum(LeadStatus).optional(),
+  assignedToId: z.string().uuid().optional(),
+});
+
+export type EditLeadRequest = z.infer<typeof editLeadSchema>;
+
+export interface LeadAssigneeSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  pages: number;
+}
+
+export interface LeadSummary {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  stage: LeadStage;
+  status: LeadStatus;
+  createdAt: Date;
+  assignedToId: string | null;
+  assignedTo: LeadAssigneeSummary | null;
+}
+
+export interface LeadDetail extends LeadSummary {
+  updatedAt: Date;
+}
+
+export interface ListLeadsResponseData {
+  leads: LeadSummary[];
+  pagination: PaginationMeta;
+}

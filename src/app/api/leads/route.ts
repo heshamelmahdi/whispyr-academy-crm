@@ -1,6 +1,10 @@
 import { Role } from "@/generated/prisma/enums";
 import { createLeadSchema, listLeadsQuerySchema } from "@/services/lead/schema";
-import { createLead, listLeads } from "@/services/lead/service";
+import {
+  createLead,
+  LeadServiceError,
+  listLeads,
+} from "@/services/lead/service";
 import {
   authenticateUser,
   AuthenticationError,
@@ -29,12 +33,16 @@ export async function GET(request: NextRequest) {
     const leads = await listLeads(profile, params);
 
     // Return response
-    return NextResponse.json({
-      success: true,
-      data: leads,
-    });
+    return NextResponse.json({ success: true, data: leads });
   } catch (error) {
     if (error instanceof AuthenticationError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode },
+      );
+    }
+
+    if (error instanceof LeadServiceError) {
       return NextResponse.json(
         { error: error.message },
         { status: error.statusCode },
@@ -69,12 +77,16 @@ export async function POST(request: NextRequest) {
     // Create lead
     const lead = await createLead(profile, data);
 
-    return NextResponse.json({
-      success: true,
-      data: lead,
-    });
+    return NextResponse.json({ success: true, data: lead });
   } catch (error) {
     if (error instanceof AuthenticationError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode },
+      );
+    }
+
+    if (error instanceof LeadServiceError) {
       return NextResponse.json(
         { error: error.message },
         { status: error.statusCode },
