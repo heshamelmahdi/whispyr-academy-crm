@@ -7,7 +7,7 @@ import {
   ListLeadsParams,
   ListLeadsResponseData,
 } from "./schema";
-import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
+import { Prisma, Profile, Role } from "@/generated/prisma/client";
 import { buildPagination } from "./helpers";
 
 const assigneeSelect = {
@@ -78,30 +78,21 @@ export async function dbFindAssignableAgentById(
   });
 }
 
-export async function dbCreateLead(profile: Profile, data: CreateLeadRequest) {
-  return await prisma.$transaction(async (tx) => {
-    const lead = await tx.lead.create({
-      data: {
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-      },
-    });
-
-    await tx.activity.create({
-      data: {
-        leadId: lead.id,
-        actorId: profile.id,
-        content: data.note,
-        type: ActivityType.LEAD_CREATED,
-      },
-    });
-
-    return tx.lead.findUniqueOrThrow({
-      where: { id: lead.id },
-      select: leadDetailSelect,
-    });
+export async function dbCreateLead(
+  profile: Profile,
+  data: CreateLeadRequest,
+  tx?: Prisma.TransactionClient,
+) {
+  const client = tx ?? prisma;
+  const lead = await client.lead.create({
+    data: {
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+    },
   });
+
+  return lead;
 }
 
 export async function dbUpdateLead(

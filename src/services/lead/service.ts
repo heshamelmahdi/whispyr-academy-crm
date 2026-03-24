@@ -1,4 +1,4 @@
-import { Prisma, Profile, Role } from "@/generated/prisma/client";
+import { ActivityType, Prisma, Profile, Role } from "@/generated/prisma/client";
 import { CreateLeadRequest, EditLeadRequest, ListLeadsParams } from "./schema";
 import { dbCreateLead, dbGetLeadById, dbListLeads, dbUpdateLead } from "./db";
 import { buildLeadChangeActivities } from "./helpers";
@@ -32,7 +32,23 @@ export async function listLeads(profile: Profile, params: ListLeadsParams) {
 }
 
 export async function createLead(profile: Profile, data: CreateLeadRequest) {
-  return dbCreateLead(profile, data);
+  const result = await prisma.$transaction(async (tx) => {
+    const lead = await dbCreateLead(profile, data, tx);
+    await ActivityService.create(
+      [
+        {
+          leadId: lead.id,
+          actorId: profile.id,
+          type: ActivityType.LEAD_CREATED,
+        },
+      ],
+      tx,
+    );
+
+    return lead;
+  });
+
+  return result;
 }
 
 export async function getLead(profile: Profile, id: string) {
