@@ -1,43 +1,40 @@
-import { dbCreateActivity, dbGetLeadActivities } from "./db";
+import { Prisma } from "@/generated/prisma/client";
+import { dbCreateActivities, dbGetLeadActivities } from "./db";
 import { buildActivityContent } from "./helpers";
 import {
   CreateActivityRequest,
-  createActivitySchema,
+  createManyActivitiesSchema,
   GetLeadActivitiesRequest,
 } from "./schema";
 
-export async function createActivity(request: CreateActivityRequest) {
-  const validated = createActivitySchema.safeParse(request);
+export async function createActivities(
+  request: CreateActivityRequest[],
+  tx?: Prisma.TransactionClient,
+) {
+  const validated = createManyActivitiesSchema.safeParse(request);
   if (!validated.success) {
     return {
-      success: false,
+      success: false as const,
       errors: validated.error.flatten().fieldErrors,
     };
   }
 
-  const content = buildActivityContent(
-    validated.data.type,
-    validated.data.meta,
-  );
+  const activitiesToCreate: Prisma.ActivityCreateManyInput[] = [];
+  for (const activity of validated.data) {
+    const content = buildActivityContent(activity.type, activity.meta);
+    activitiesToCreate.push({
+      leadId: activity.leadId,
+      actorId: activity.actorId,
+      content,
+      type: activity.type,
+    });
+  }
 
-  const activity = await dbCreateActivity({
-    lead: {
-      connect: {
-        id: validated.data.leadId,
-      },
-    },
-    actor: {
-      connect: {
-        id: validated.data.actorId,
-      },
-    },
-    type: validated.data.type,
-    content: content,
-  });
+  const countCreated = await dbCreateActivities(activitiesToCreate, tx);
 
   return {
-    success: true,
-    activity,
+    success: true as const,
+    count: countCreated.count,
   };
 }
 

@@ -1,7 +1,7 @@
 import { ActivityType, LeadStage, LeadStatus } from "@/generated/prisma/enums";
 import { z } from "zod";
 
-export const createActivitySchema = z
+const createActivitySchema = z
   .object({
     leadId: z.uuid(),
     actorId: z.uuid(),
@@ -39,6 +39,8 @@ export const createActivitySchema = z
       }
     }
   });
+
+export const createManyActivitiesSchema = z.array(createActivitySchema);
 
 export type CreateActivityRequest = z.infer<typeof createActivitySchema>;
 

@@ -1,26 +1,5 @@
-import {
-  ActivityType,
-  LeadStage,
-  LeadStatus,
-  Prisma,
-} from "@/generated/prisma/client";
-
-interface BuildLeadChangeActivitiesParams {
-  leadId: string;
-  actorId: string;
-  existing: {
-    status: LeadStatus;
-    stage: LeadStage;
-    assignedToId: string | null;
-  };
-  updates: {
-    status?: LeadStatus;
-    stage?: LeadStage;
-    assignedToId?: string | null;
-  };
-  existingAssignedToName?: string | null;
-  nextAssignedToName?: string | null;
-}
+import { ActivityType, Lead } from "@/generated/prisma/client";
+import { CreateActivityRequest } from "../activity";
 
 export function buildPagination(total: number, page: number, pageSize: number) {
   return {
@@ -31,47 +10,43 @@ export function buildPagination(total: number, page: number, pageSize: number) {
   };
 }
 
+interface BuildLeadChangeActivitiesParams {
+  leadId: string;
+  actorId: string;
+  existingLead: Lead;
+  newLead: Partial<Lead>;
+}
 export function buildLeadChangeActivities({
   leadId,
   actorId,
-  existing,
-  updates,
-  existingAssignedToName,
-  nextAssignedToName,
-}: BuildLeadChangeActivitiesParams): Prisma.ActivityCreateManyInput[] {
-  const activities: Omit<Prisma.ActivityCreateManyInput, "leadId">[] = [];
+  existingLead,
+  newLead,
+}: BuildLeadChangeActivitiesParams) {
+  const activities: CreateActivityRequest[] = [];
 
-  if (updates.status && updates.status !== existing.status) {
+  if (newLead.status && newLead.status !== existingLead.status) {
     activities.push({
+      leadId,
       actorId,
       type: ActivityType.STATUS_CHANGE,
-      content: `Status changed from ${existing.status} to ${updates.status}`,
+      meta: {
+        from: existingLead.status,
+        to: newLead.status,
+      },
     });
   }
 
-  if (updates.stage && updates.stage !== existing.stage) {
+  if (newLead.stage && newLead.stage !== existingLead.stage) {
     activities.push({
+      leadId,
       actorId,
       type: ActivityType.STAGE_CHANGE,
-      content: `Stage changed from ${existing.stage} to ${updates.stage}`,
+      meta: {
+        from: existingLead.stage,
+        to: newLead.stage,
+      },
     });
   }
 
-  if (
-    updates.assignedToId !== undefined &&
-    updates.assignedToId !== existing.assignedToId
-  ) {
-    activities.push({
-      actorId,
-      type: ActivityType.ASSIGNMENT_CHANGE,
-      content: `Assignment changed from ${
-        existingAssignedToName || "Unassigned"
-      } to ${nextAssignedToName || "Unassigned"}`,
-    });
-  }
-
-  return activities.map((activity) => ({
-    leadId,
-    ...activity,
-  }));
+  return activities;
 }

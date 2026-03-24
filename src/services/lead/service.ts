@@ -1,14 +1,10 @@
 import { Prisma, Profile, Role } from "@/generated/prisma/client";
 import { CreateLeadRequest, EditLeadRequest, ListLeadsParams } from "./schema";
-import {
-  dbCreateLead,
-  dbFindAssignableAgentById,
-  dbGetLeadById,
-  dbListLeads,
-  dbUpdateLead,
-} from "./db";
+import { dbCreateLead, dbGetLeadById, dbListLeads, dbUpdateLead } from "./db";
 import { buildLeadChangeActivities } from "./helpers";
 import { canEditLeadContactFields } from "./permissions";
+import { ActivityService } from "../activity";
+import { prisma } from "@/lib/prisma";
 
 export class LeadServiceError extends Error {
   constructor(
@@ -76,30 +72,24 @@ export async function updateLead(
     throw new LeadServiceError("Unauthorized", 403);
   }
 
-  let nextAssignedToName: string | null | undefined = undefined;
-
-  if (data.assignedToId !== undefined) {
-    const nextAssignedAgent = await dbFindAssignableAgentById(data.assignedToId);
-
-    if (!nextAssignedAgent) {
-      throw new LeadServiceError("Assigned agent not found", 400);
-    }
-
-    nextAssignedToName = nextAssignedAgent.name;
-  }
-
   const activities = buildLeadChangeActivities({
     leadId: id,
     actorId: profile.id,
-    existing: {
-      status: existingLead.status,
-      stage: existingLead.stage,
-      assignedToId: existingLead.assignedToId,
-    },
-    updates: data,
-    existingAssignedToName: existingLead.assignedTo?.name ?? null,
-    nextAssignedToName,
+    existingLead,
+    newLead: data,
   });
 
-  return dbUpdateLead(id, data, activities);
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedLead = await dbUpdateLead(id, data, tx);
+    const activitiesCreated = await ActivityService.create(activities, tx);
+    if (!activitiesCreated.success)
+      throw new Error("Failed to create activities");
+
+    return {
+      lead: updatedLead,
+      activities: activitiesCreated.count,
+    };
+  });
+
+  return result;
 }

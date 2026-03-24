@@ -14,12 +14,13 @@ import { prisma } from "@/lib/prisma";
 //   content: string;
 // };
 
-export async function dbCreateActivity(activity: Prisma.ActivityCreateInput) {
-  const created = await prisma.activity.create({
-    data: activity,
-    select: {
-      id: true,
-    },
+export async function dbCreateActivities(
+  activities: Prisma.ActivityCreateManyInput[],
+  tx?: Prisma.TransactionClient,
+) {
+  const client = tx ?? prisma;
+  const created = await client.activity.createMany({
+    data: activities,
   });
 
   return created;

@@ -107,21 +107,14 @@ export async function dbCreateLead(profile: Profile, data: CreateLeadRequest) {
 export async function dbUpdateLead(
   id: string,
   data: EditLeadRequest,
-  activities: Prisma.ActivityCreateManyInput[],
+  tx?: Prisma.TransactionClient,
 ) {
-  return prisma.$transaction(async (tx) => {
-    const updatedLead = await tx.lead.update({
-      where: { id },
-      data,
-      select: leadDetailSelect,
-    });
-
-    if (activities.length > 0) {
-      await tx.activity.createMany({
-        data: activities,
-      });
-    }
-
-    return updatedLead;
+  const client = tx ?? prisma;
+  const updatedLead = await client.lead.update({
+    where: { id },
+    data,
+    select: leadDetailSelect,
   });
+
+  return updatedLead;
 }

@@ -1,8 +1,8 @@
-import { createActivity, getLeadActivities } from "./service";
+import { createActivities, getLeadActivities } from "./service";
 import { getLeadActivitiesSchema } from "./schema";
 
 export const ActivityService = {
-  create: createActivity,
+  create: createActivities,
   getByLeadId: getLeadActivities,
 } as const;
 
