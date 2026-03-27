@@ -48,7 +48,7 @@ export function LeadDetailClient({
       <Tabs defaultValue="overview" className="space-y-0">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="timeline">Activities</TabsTrigger>
           <TabsTrigger value="reminders">Reminders</TabsTrigger>
           <TabsTrigger value="files">Files</TabsTrigger>
         </TabsList>

@@ -2,8 +2,8 @@ import type React from "react";
 
 import { LeadStage, LeadStatus } from "@/generated/prisma/enums";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "../ui/button";
 import { Dispatch, SetStateAction } from "react";
+import { Button } from "../ui/button";
 
 const statusVariantMap: Record<
   LeadStatus,
@@ -47,14 +47,34 @@ export function StatusBadge({ status }: { status: LeadStatus }) {
 }
 
 export function StageBadge({ stage }: { stage: LeadStage }) {
-  return <Badge variant={stageVariantMap[stage]}>{formatEnumLabel(stage)}</Badge>;
+  return (
+    <Badge variant={stageVariantMap[stage]}>{formatEnumLabel(stage)}</Badge>
+  );
 }
 
-export function Pagination({ startItem, endItem, total, page, pageCount, isLoading, setPage }: { startItem: number, endItem: number, total: number, page: number, pageCount: number, isLoading: boolean, setPage: Dispatch<SetStateAction<number>> }) {
+export function Pagination({
+  startItem,
+  endItem,
+  total,
+  page,
+  pageCount,
+  isLoading,
+  setPage,
+  itemLabel = "leads",
+}: {
+  startItem: number;
+  endItem: number;
+  total: number;
+  page: number;
+  pageCount: number;
+  isLoading: boolean;
+  setPage: Dispatch<SetStateAction<number>>;
+  itemLabel?: string;
+}) {
   return (
     <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="text-sm text-slate-500">
-        Showing {startItem}-{endItem} of {total} leads
+        Showing {startItem}-{endItem} of {total} {itemLabel}
       </div>
 
       <div className="flex items-center gap-2">
@@ -84,5 +104,5 @@ export function Pagination({ startItem, endItem, total, page, pageCount, isLoadi
         </Button>
       </div>
     </div>
-  )
+  );
 }
