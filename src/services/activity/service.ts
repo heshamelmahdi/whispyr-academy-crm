@@ -23,7 +23,11 @@ export async function createActivities(
 
   const activitiesToCreate: Prisma.ActivityCreateManyInput[] = [];
   for (const activity of validated.data) {
-    const content = buildActivityContent(activity.type, activity.meta);
+    const content = buildActivityContent(
+      activity.type,
+      activity.meta,
+      activity.content,
+    );
     activitiesToCreate.push({
       leadId: activity.leadId,
       actorId: activity.actorId,
