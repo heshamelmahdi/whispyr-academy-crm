@@ -4,6 +4,7 @@ import { LeadStage, LeadStatus } from "@/generated/prisma/enums";
 import { Badge } from "@/components/ui/badge";
 import { Dispatch, SetStateAction } from "react";
 import { Button } from "../ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const statusVariantMap: Record<
   LeadStatus,
@@ -61,6 +62,7 @@ export function Pagination({
   isLoading,
   setPage,
   itemLabel = "leads",
+  inSmallSpace = false,
 }: {
   startItem: number;
   endItem: number;
@@ -70,12 +72,19 @@ export function Pagination({
   isLoading: boolean;
   setPage: Dispatch<SetStateAction<number>>;
   itemLabel?: string;
+  inSmallSpace?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="text-sm text-slate-500">
-        Showing {startItem}-{endItem} of {total} {itemLabel}
-      </div>
+      {inSmallSpace ? (
+        <div className="text-xs text-slate-500">
+          {startItem}-{endItem} of {total}
+        </div>
+      ) : (
+        <div className="text-sm text-slate-500">
+          Showing {startItem}-{endItem} of {total} {itemLabel}
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Button
@@ -86,7 +95,7 @@ export function Pagination({
           }
           disabled={isLoading || page <= 1}
         >
-          Previous
+          {inSmallSpace ? <ChevronLeft /> : "Previous"}
         </Button>
         <div className="text-sm text-slate-500">
           Page {page} of {Math.max(pageCount, 1)}
@@ -100,7 +109,7 @@ export function Pagination({
           }
           disabled={isLoading || page >= Math.max(pageCount, 1)}
         >
-          Next
+          {inSmallSpace ? <ChevronRight /> : "Next"}
         </Button>
       </div>
     </div>
