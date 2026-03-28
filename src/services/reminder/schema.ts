@@ -15,3 +15,7 @@ export const createReminderSchema = z.object({
 export type CreateReminderRequest = z.infer<typeof createReminderSchema> & {
   leadId: string;
 };
+
+export const qstashReminderDueSchema = z.object({
+  reminderId: z.uuid(),
+});

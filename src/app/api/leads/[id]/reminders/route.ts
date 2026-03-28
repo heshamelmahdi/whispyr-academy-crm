@@ -16,12 +16,14 @@ export async function POST(
     const data = ReminderSchema.create.parse(body);
 
     const reminder = await ReminderService.create(
-      { ...data, leadId: id },
+      // TODO: return to actual dueAt
+      { ...data, leadId: id, dueAt: new Date(Date.now() + 1000 * 10) },
       { id: profile.id, role: profile.role },
     );
 
     return NextResponse.json({ success: true, data: reminder });
   } catch (error) {
+    console.error("Error creating reminder", error);
     return handleRouteError(error);
   }
 }
