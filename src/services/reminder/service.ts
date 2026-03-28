@@ -1,17 +1,21 @@
 import { UserSnapshot } from "@/utils/types/user";
-import { CreateReminderRequest } from "./schema";
+import { CreateReminderRequest, ListLeadRemindersRequest, ListMyRemindersRequest } from "./schema";
 import {
   dbCreateReminder,
   dbGetLeadAssignedTo,
   dbGetReminder,
   dbUpdateReminderQstashMessageId,
   dbUpdateReminderStatus,
+  dbGetLeadReminders,
+  dbGetReminderById,
 } from "./db";
 import { qstash, reminderCallbackUrl } from "@/lib/qstash";
 import { prisma } from "@/lib/prisma";
 import { validateLeadAccess } from "./helpers";
 import { redis } from "@/lib/redis";
 import { NotificationService } from "../notification";
+import { buildPagination } from "@/utils/pagination";
+import { Role, Prisma } from "@/generated/prisma/client";
 
 export const createReminder = async (
   request: CreateReminderRequest,
@@ -99,4 +103,85 @@ export const fireReminder = async (reminderId: string) => {
   return {
     status: "success" as const,
   };
+};
+
+export const listLeadReminders = async (
+  request: ListLeadRemindersRequest,
+  userSnapshot: UserSnapshot,
+) => {
+  const where: Prisma.ReminderWhereInput = {
+    leadId: request.leadId,
+  };
+
+  if (userSnapshot.role === Role.AGENT) {
+    where.assignedToId = userSnapshot.id;
+  }
+
+  if (request.status) {
+    where.status = request.status;
+  }
+
+  const result = await dbGetLeadReminders(where, {
+    page: request.page,
+    pageSize: request.pageSize,
+  });
+
+  return {
+    reminders: result.reminders,
+    pagination: buildPagination(result.total, request.page, request.pageSize),
+  };
+};
+
+export const listMyReminders = async (
+  request: ListMyRemindersRequest,
+  userSnapshot: UserSnapshot,
+) => {
+  const where: Prisma.ReminderWhereInput = {};
+
+  if (userSnapshot.role === Role.AGENT) {
+    where.assignedToId = userSnapshot.id;
+  }
+
+  if (request.status) {
+    where.status = request.status;
+  }
+
+  const result = await dbGetLeadReminders(where, {
+    page: request.page,
+    pageSize: request.pageSize,
+  });
+
+  return {
+    reminders: result.reminders,
+    pagination: buildPagination(result.total, request.page, request.pageSize),
+  };
+};
+
+export const cancelReminder = async (
+  reminderId: string,
+  userSnapshot: UserSnapshot,
+) => {
+  const reminder = await dbGetReminderById(reminderId);
+  if (!reminder) {
+    throw new Error("Reminder not found");
+  }
+
+  if (reminder.status !== "PENDING") {
+    throw new Error("Only pending reminders can be cancelled");
+  }
+
+  if (!validateLeadAccess(reminder.assignedToId, userSnapshot)) {
+    throw new Error("You are not authorized to cancel this reminder");
+  }
+
+  // Cancel the QStash message if it exists
+  if (reminder.qstashMessageId) {
+    try {
+      await qstash.messages.delete(reminder.qstashMessageId);
+    } catch {
+      // QStash message may have already been delivered or expired
+    }
+  }
+
+  return dbUpdateReminderStatus(reminderId, "CANCELLED");
 };

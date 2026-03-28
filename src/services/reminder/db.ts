@@ -78,3 +78,33 @@ export const dbUpdateReminderStatus = async (
     data: { status },
   });
 };
+
+export const dbGetLeadReminders = async (
+  where: Prisma.ReminderWhereInput,
+  params: { page: number; pageSize: number },
+) => {
+  const [reminders, total] = await Promise.all([
+    prisma.reminder.findMany({
+      where,
+      orderBy: { dueAt: "desc" },
+      take: params.pageSize,
+      skip: (params.page - 1) * params.pageSize,
+      include: {
+        lead: { select: { id: true, name: true } },
+        assignedTo: { select: { id: true, name: true } },
+      },
+    }),
+    prisma.reminder.count({ where }),
+  ]);
+  return { reminders, total };
+};
+
+export const dbGetReminderById = async (reminderId: string) => {
+  return prisma.reminder.findUnique({
+    where: { id: reminderId },
+    include: {
+      lead: { select: { id: true, name: true } },
+      assignedTo: { select: { id: true, name: true } },
+    },
+  });
+};
