@@ -127,6 +127,7 @@ enum ReminderStatus {
   PENDING
   FIRED
   CANCELLED
+  COMPLETED
 }
 
 // Notifications
