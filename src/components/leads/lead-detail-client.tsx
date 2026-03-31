@@ -8,6 +8,7 @@ import { formatLeadDate, StatusBadge } from "@/components/leads/reusable";
 import { Overview } from "./lead-details/Overview";
 import { Timeline } from "./lead-details/Timeline";
 import { Reminders } from "./lead-details/Reminders";
+import { AI } from "./lead-details/AI";
 
 export function LeadDetailClient({
   id,
@@ -53,6 +54,7 @@ export function LeadDetailClient({
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="timeline">Activities</TabsTrigger>
           <TabsTrigger value="reminders">Reminders</TabsTrigger>
+          <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="files">Files</TabsTrigger>
         </TabsList>
 
@@ -66,6 +68,10 @@ export function LeadDetailClient({
 
         <TabsContent value="reminders">
           <Reminders leadId={id} />
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <AI leadId={id} />
         </TabsContent>
 
         <TabsContent value="files">
