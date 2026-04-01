@@ -83,3 +83,10 @@ export type CallFollowUp = z.infer<typeof callFollowUpSchema>;
 export const generateLeadBriefSchema = z.object({
   leadId: z.uuid(),
 });
+
+export const saveLeadBriefSchema = z.object({
+  leadId: z.uuid(),
+  brief: leadBriefSchema,
+});
+
+export type SaveLeadBriefRequest = z.infer<typeof saveLeadBriefSchema>;

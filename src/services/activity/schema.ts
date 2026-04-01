@@ -28,6 +28,18 @@ export const createCallAttemptSchema = z.object({
 
 export type CreateCallAttemptRequest = z.infer<typeof createCallAttemptSchema>;
 
+export const createAIActivitySchema = z.object({
+  type: z.enum([
+    ActivityType.AI_LEAD_BRIEF_GENERATED,
+    ActivityType.AI_FOLLOWUP_DRAFT_GENERATED,
+  ]),
+  leadId: z.uuid(),
+  actorId: z.uuid(),
+  content: z.string().min(1),
+});
+
+export type CreateAIActivityRequest = z.infer<typeof createAIActivitySchema>;
+
 const createActivitySchema = z
   .object({
     leadId: z.uuid(),

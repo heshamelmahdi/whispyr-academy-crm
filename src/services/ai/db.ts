@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { SaveLeadBriefRequest } from "./schema";
+import { Profile } from "@/generated/prisma/client";
 
 export async function dbGetLeadWithContext(leadId: string) {
   return await prisma.lead.findUnique({
@@ -53,6 +55,34 @@ export async function dbGetNextReminder(leadId: string) {
       title: true,
       note: true,
       dueAt: true,
+    },
+  });
+}
+
+export async function dbCreateLeadBrief(
+  request: SaveLeadBriefRequest,
+  user: Profile,
+) {
+  return await prisma.aILeadBrief.create({
+    data: {
+      leadId: request.leadId,
+      brief: request.brief,
+      createdById: user.id,
+    },
+  });
+}
+
+export async function dbGetLastLeadBrief(leadId: string) {
+  return await prisma.aILeadBrief.findFirst({
+    where: { leadId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      leadId: true,
+      brief: true,
+      createdAt: true,
+      updatedAt: true,
+      createdById: true,
     },
   });
 }
