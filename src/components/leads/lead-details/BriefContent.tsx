@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
 export function BriefContent({ brief }: { brief: LeadBrief }) {
+  if (!brief) return null;
   return (
     <div className="space-y-4">
       {/* Summary */}
