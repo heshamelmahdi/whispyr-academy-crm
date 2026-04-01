@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
     const profile = await authenticateUser();
     const body = await req.json();
 
-    const { leadId } = AISchema.generateLeadBrief.parse(body);
+    const data = AISchema.saveLeadBrief.parse(body);
 
-    const brief = await AIService.generateLeadBrief(leadId, profile);
+    const brief = await AIService.saveLeadBrief(data, profile);
 
     return NextResponse.json({ success: true, data: brief });
   } catch (error) {
