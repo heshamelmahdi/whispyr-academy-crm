@@ -90,3 +90,15 @@ export const saveLeadBriefSchema = z.object({
 });
 
 export type SaveLeadBriefRequest = z.infer<typeof saveLeadBriefSchema>;
+
+export const generateCallFollowUpRequestSchema = z.object({
+  leadId: z.uuid(),
+  callOutcome: z.enum([
+    "NO_ANSWER",
+    "ANSWERED",
+    "WRONG_NUMBER",
+    "BUSY",
+    "CALL_BACK_LATER",
+  ]),
+  agentNotes: z.string().trim().max(5000).optional(),
+});
