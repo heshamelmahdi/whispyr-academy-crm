@@ -1,4 +1,4 @@
-import { LeadBrief } from "@/services/ai/schema";
+import { CallFollowUp, LeadBrief } from "@/services/ai/schema";
 import { api } from "../api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -29,6 +29,26 @@ export function useSaveBrief(leadId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brief", leadId] });
+    },
+  });
+}
+
+export function useGenerateCallFollowup(leadId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (args: {
+      callOutcome: string;
+      agentNotes?: string;
+    }): Promise<CallFollowUp> => {
+      const { data } = await api.post("/ai/call-followup", {
+        leadId,
+        ...args,
+      });
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["activities"] });
     },
   });
 }
