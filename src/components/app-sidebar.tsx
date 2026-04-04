@@ -16,7 +16,7 @@ const mainSidebarItems = [
 ]
 
 const adminSidebarItems = [
-  { label: "Users", href: "/users", icon: User },
+  { label: "Users", href: "/admin/users", icon: User },
 ]
 
 export function AppSidebar({ role, user }: { role: Role, user: Profile }) {

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
 import { CreateUserSchema, UpdateUserSchema } from "@/services/admin/schema";
 
-type User = {
+export type User = {
   id: string;
   email: string;
   name: string;
