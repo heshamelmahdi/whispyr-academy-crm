@@ -8,23 +8,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { Role } from "@/generated/prisma/enums";
 
 // ------------------------------------------------------------------
-// GET /api/admin/users/[id] — Get a single user
-// ------------------------------------------------------------------
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    await authenticateUser([Role.ADMIN]);
-    const { id } = await params;
-    const user = await AdminService.user.get(id);
-    return NextResponse.json({ success: true, data: user });
-  } catch (error) {
-    return handleRouteError(error);
-  }
-}
-
-// ------------------------------------------------------------------
 // PUT /api/admin/users/[id] — Update a single user
 // ------------------------------------------------------------------
 export async function PUT(
