@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: followup });
   } catch (error) {
+    console.error(error);
     return handleRouteError(error);
   }
 }

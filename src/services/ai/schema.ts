@@ -72,9 +72,7 @@ export const callFollowUpSchema = z.object({
   suggestedReminder: z.object({
     title: z.string().describe("Short, actionable reminder title"),
     note: z.string().describe("Context for the reminder"),
-    suggestedDueAt: z.coerce
-      .date()
-      .describe("Suggested due date in ISO format"),
+    suggestedDueAt: z.string().describe("Suggested due date in ISO format"),
   }),
 });
 
