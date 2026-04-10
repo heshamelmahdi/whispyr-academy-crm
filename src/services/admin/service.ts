@@ -208,3 +208,49 @@ export async function reactivateUser(targetUserId: string) {
 
   return dbReactivateUser(targetUserId);
 }
+
+// ------------------------------------------------------------------
+// RESEND INVITE
+// ------------------------------------------------------------------
+/**
+ * Generate a fresh magic link for an existing user and re-send the invite
+ * email. Useful when the original invite bounced or expired.
+ *
+ * Unlike createUser, we throw on email failure here — the caller's only goal
+ * is to get an email delivered, so a silent success would be misleading.
+ */
+export async function resendInvite(targetUserId: string) {
+  const target = await dbFindUserById(targetUserId);
+  if (!target) {
+    throw new AdminServiceError("User not found", 404);
+  }
+
+  if (!target.isActive) {
+    throw new AdminServiceError(
+      "Cannot resend invite to a deactivated user",
+      400,
+    );
+  }
+
+  const { data: magicLinkData, error: magicLinkError } =
+    await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: target.email,
+    });
+
+  if (magicLinkError || !magicLinkData?.properties?.action_link) {
+    console.error("Error generating magic link:", magicLinkError);
+    throw new AdminServiceError("Failed to generate magic link", 500);
+  }
+
+  const magicLink = magicLinkData.properties.action_link;
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: target.email,
+    subject: "Your CRM Pro sign-in link",
+    html: generateInviteEmailHTML(target.name, magicLink),
+  });
+
+  return { success: true, email: target.email };
+}

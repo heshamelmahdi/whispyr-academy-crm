@@ -5,6 +5,7 @@ import {
   getUserById,
   listUsers,
   reactivateUser,
+  resendInvite,
   updateUserById,
 } from "./service";
 
@@ -16,6 +17,7 @@ export const AdminService = {
     update: updateUserById,
     deactivate: deactivateUser,
     reactivate: reactivateUser,
+    resendInvite,
   },
 } as const;
 

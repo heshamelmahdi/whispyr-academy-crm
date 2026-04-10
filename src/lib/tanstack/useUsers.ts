@@ -88,3 +88,15 @@ export function useReactivateUser(id: string) {
     },
   });
 }
+
+// ------------------------------------------------------------------
+// RESEND INVITE (Mutation)
+// ------------------------------------------------------------------
+export function useResendInvite(id: string) {
+  return useMutation({
+    mutationFn: async (): Promise<{ success: true; email: string }> => {
+      const { data } = await api.post(`/admin/users/${id}/resend-invite`);
+      return data.data;
+    },
+  });
+}

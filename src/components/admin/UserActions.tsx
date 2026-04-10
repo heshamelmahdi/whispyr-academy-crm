@@ -5,6 +5,7 @@ import {
   useUpdateUser,
   useDeactivateUser,
   useReactivateUser,
+  useResendInvite,
 } from "@/lib/tanstack/useUsers";
 import { UpdateUserSchema } from "@/services/admin/schema";
 import { useState } from "react";
@@ -17,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { MoreHorizontal, UserCog, UserX } from "lucide-react";
+import { Mail, MoreHorizontal, UserCog, UserX } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +59,18 @@ export function UserActions({ user }: { user: User }) {
   const updateUser = useUpdateUser(user.id);
   const deactivateUser = useDeactivateUser(user.id);
   const reactivateUser = useReactivateUser(user.id);
+  const resendInvite = useResendInvite(user.id);
+
+  function handleResendInvite() {
+    resendInvite.mutate(undefined, {
+      onSuccess: () => {
+        toast.success(`Invite re-sent to ${user.email}`);
+      },
+      onError: (error: Error) => {
+        toast.error(error.message || "Failed to resend invite.");
+      },
+    });
+  }
 
   function handleUpdateUser() {
     const trimmedName = updateUserForm.name.trim();
@@ -141,6 +154,13 @@ export function UserActions({ user }: { user: User }) {
           >
             <UserCog className="mr-2 h-4 w-4" />
             Edit User
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleResendInvite}
+            disabled={!user.isActive || resendInvite.isPending}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            {resendInvite.isPending ? "Sending…" : "Resend invite"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.isActive ? (
