@@ -1,4 +1,8 @@
-import { createUserSchema, updateUserSchema } from "./schema";
+import {
+  createUserSchema,
+  listUsersParamsSchema,
+  updateUserSchema,
+} from "./schema";
 import {
   createUser,
   deactivateUser,
@@ -25,5 +29,6 @@ export const AdminSchema = {
   user: {
     create: createUserSchema,
     update: updateUserSchema,
+    list: listUsersParamsSchema,
   },
 } as const;

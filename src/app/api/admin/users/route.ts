@@ -7,15 +7,19 @@ import { AdminSchema, AdminService } from "@/services/admin";
 // ------------------------------------------------------------------
 // GET /api/admin/users — List all users
 // ------------------------------------------------------------------
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Only admins can see the user list.
     // If a non-admin calls this, authenticateUser throws a 403.
     await authenticateUser([Role.ADMIN]);
 
-    const users = await AdminService.user.list();
+    const params = AdminSchema.user.list.parse(
+      Object.fromEntries(request.nextUrl.searchParams),
+    );
 
-    return NextResponse.json({ success: true, data: users });
+    const result = await AdminService.user.list(params);
+
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
     return handleRouteError(error);
   }

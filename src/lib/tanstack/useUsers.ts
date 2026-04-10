@@ -2,6 +2,7 @@ import { Role } from "@/generated/prisma/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api";
 import { CreateUserSchema, UpdateUserSchema } from "@/services/admin/schema";
+import { PaginationMeta } from "@/utils/pagination";
 
 export type User = {
   id: string;
@@ -12,14 +13,19 @@ export type User = {
   createdAt: Date;
 };
 
+export type ListUsersResponse = {
+  users: User[];
+  pagination: PaginationMeta;
+};
+
 // ------------------------------------------------------------------
-// LIST USERS (Query)
+// LIST USERS (Query) — paginated
 // ------------------------------------------------------------------
-export function useUsers() {
-  return useQuery<User[]>({
-    queryKey: ["admin", "users"],
+export function useUsers(params: { page: number; pageSize: number }) {
+  return useQuery<ListUsersResponse>({
+    queryKey: ["admin", "users", params],
     queryFn: async () => {
-      const { data } = await api.get("/admin/users");
+      const { data } = await api.get("/admin/users", { params });
       return data.data;
     },
   });

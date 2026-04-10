@@ -8,9 +8,10 @@ import {
   dbReactivateUser,
   dbUpdateUser,
 } from "./db";
-import { CreateUserSchema, UpdateUserSchema } from "./schema";
+import { CreateUserSchema, ListUsersParams, UpdateUserSchema } from "./schema";
 import supabaseAdmin from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
+import { buildPagination } from "@/utils/pagination";
 import { generateInviteEmailHTML } from "./helpers";
 
 // Custom error class for admin operations.
@@ -102,11 +103,15 @@ export async function createUser(data: CreateUserSchema) {
 // LIST USERS
 // ------------------------------------------------------------------
 /**
- * List all users in the system.
+ * List users with pagination.
  * No role filtering — only admins can call this (enforced at route level).
  */
-export async function listUsers() {
-  return dbListAllUsers();
+export async function listUsers(params: ListUsersParams) {
+  const { users, total } = await dbListAllUsers(params);
+  return {
+    users,
+    pagination: buildPagination(total, params.page, params.pageSize),
+  };
 }
 
 // ------------------------------------------------------------------
