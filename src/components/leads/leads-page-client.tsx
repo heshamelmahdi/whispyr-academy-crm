@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useGetLeads } from "@/lib/tanstack/useLeads";
 import { CreateLeadDialog } from "@/components/leads/create-lead-dialog";
+import { ExportButton } from "@/components/leads/ExportButton";
 import { Pagination, StageBadge, StatusBadge } from "@/components/leads/reusable";
 
 export function LeadsPageClient({ role }: { role: Role }) {
@@ -44,7 +45,10 @@ export function LeadsPageClient({ role }: { role: Role }) {
           </p>
         </div>
 
-        {canCreateLead ? <CreateLeadDialog /> : null}
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          {canCreateLead ? <CreateLeadDialog /> : null}
+        </div>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
