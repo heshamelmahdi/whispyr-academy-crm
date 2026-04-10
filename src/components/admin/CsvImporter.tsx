@@ -25,7 +25,7 @@ export function CSVImporter() {
   const [state, setState] = useState<ImportState>("idle");
   const [results, setResults] = useState<RowValidationResult[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
-  const { mutate: importCSV, isPending } = useImport();
+  const { mutate: importCSV } = useImport();
 
 
   // --- File selection handler ---
