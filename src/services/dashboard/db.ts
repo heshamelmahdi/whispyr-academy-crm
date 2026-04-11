@@ -1,4 +1,5 @@
 import {
+  LeadStage,
   LeadStatus,
   Prisma,
   ReminderStatus,
@@ -10,6 +11,14 @@ export async function dbGetTotalLeads(where: Prisma.LeadWhereInput) {
   return await prisma.lead.count({ where });
 }
 
+function sortStages() {
+  return [
+    LeadStage.NEW,
+    LeadStage.CONTACTED,
+    LeadStage.QUALIFIED,
+    LeadStage.NEGOTIATING,
+  ];
+}
 export async function dbGetTotalLeadsByStage(where: Prisma.LeadWhereInput) {
   const result = await prisma.lead.groupBy({
     where,
@@ -19,10 +28,14 @@ export async function dbGetTotalLeadsByStage(where: Prisma.LeadWhereInput) {
     },
   });
 
-  return result.map((item) => ({
-    stage: item.stage,
-    count: item._count._all,
-  }));
+  return result
+    .map((item) => ({
+      stage: item.stage,
+      count: item._count._all,
+    }))
+    .sort(
+      (a, b) => sortStages().indexOf(a.stage) - sortStages().indexOf(b.stage),
+    );
 }
 
 export async function dbGetTotalLeadsByStatus(where: Prisma.LeadWhereInput) {
@@ -38,6 +51,31 @@ export async function dbGetTotalLeadsByStatus(where: Prisma.LeadWhereInput) {
     status: item.status,
     count: item._count._all,
   }));
+}
+
+export async function dbCountLeadsCreatedInRange(
+  baseWhere: Prisma.LeadWhereInput,
+  createdAt: Prisma.DateTimeFilter,
+) {
+  return prisma.lead.count({
+    where: {
+      ...baseWhere,
+      createdAt,
+    },
+  });
+}
+
+export async function dbGetWonAndTotalLeads(baseWhere: Prisma.LeadWhereInput) {
+  const [total, won] = await Promise.all([
+    prisma.lead.count({ where: baseWhere }),
+    prisma.lead.count({
+      where: {
+        ...baseWhere,
+        status: LeadStatus.WON,
+      },
+    }),
+  ]);
+  return { total, won };
 }
 
 export async function dbGetOverdueRemindersCount(

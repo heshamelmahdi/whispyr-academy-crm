@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { DashboardData } from "@/services/dashboard";
 
+/** Fetches dashboard overview including newLeadsThisWeek and conversionRate. */
 export function useDashboardOverview() {
   return useQuery<DashboardData>({
     queryKey: ["dashboard"],

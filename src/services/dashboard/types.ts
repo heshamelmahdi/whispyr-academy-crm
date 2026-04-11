@@ -11,5 +11,11 @@ export type DashboardData = {
   overdueRemindersCount: Awaited<
     ReturnType<typeof getDashboardData>
   >["overdueRemindersCount"];
+  newLeadsThisWeek: Awaited<
+    ReturnType<typeof getDashboardData>
+  >["newLeadsThisWeek"];
+  conversionRate: Awaited<
+    ReturnType<typeof getDashboardData>
+  >["conversionRate"];
   topAgents?: Awaited<ReturnType<typeof getDashboardData>>["topAgents"];
 };
