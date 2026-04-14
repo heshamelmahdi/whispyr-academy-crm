@@ -1,5 +1,5 @@
 import { DashboardData } from "@/services/dashboard"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { BarChart, XAxis, Bar, CartesianGrid } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 
@@ -13,12 +13,12 @@ const ByStageBreakdown = ({ data }: { data: DashboardData["totalLeadsByStage"] }
   } satisfies ChartConfig
 
   return (
-    <Card className="col-span-3">
+    <Card>
       <CardHeader>
         <CardTitle>Leads by Stage</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="max-h-[250px] w-full">
           <BarChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis

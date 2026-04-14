@@ -5,10 +5,10 @@ import { AlertCircle, Percent, UserPlus, Users } from "lucide-react";
 import { useMemo } from "react";
 import KpiCard from "./KpiCard";
 import { Role } from "@/generated/prisma/enums";
-import { cn } from "@/lib/utils";
 import ByStageBreakdown from "./ByStageBreakdown";
+import ByStatusBreakdown from "./ByStatusBreakdown";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-
+import { Skeleton } from "../ui/skeleton";
 
 function formatWeekOverWeekSubtext(
   percentChange: number | null,
@@ -23,22 +23,54 @@ function formatWeekOverWeekSubtext(
 export function DashboardPageClient({ role }: { role: Role }) {
   const { data, isLoading, error } = useDashboardOverview();
 
-  const { subHeaderText, secondRowGridStyle } = useMemo(() => {
-    if (role === "AGENT") {
-      return {
-        subHeaderText: "Review the current state of your leads in your pipeline.",
-        secondRowGridStyle: "grid-cols-1"
-      }
-    }
-    return {
-      subHeaderText: "Review the current state of the pipeline in your organization.",
-      secondRowGridStyle: "grid-cols-4"
-    }
-  }, [role]);
+  const subHeaderText = useMemo(
+    () =>
+      role === "AGENT"
+        ? "Review the current state of your leads in your pipeline."
+        : "Review the current state of the pipeline in your organization.",
+    [role],
+  );
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !data)
-    return <div>Error: {error?.message ?? "Unknown error"}</div>;
+  const isManagerOrAdmin = role !== "AGENT";
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-4 md:p-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">{subHeaderText}</p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-xl" />
+        </div>
+        {isManagerOrAdmin ? (
+          <Skeleton className="h-48 w-full rounded-xl" />
+        ) : null}
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="space-y-6 p-4 md:p-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">{subHeaderText}</p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center text-sm text-destructive">
+            Failed to load dashboard. {error?.message ?? "Please try again."}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -67,7 +99,6 @@ export function DashboardPageClient({ role }: { role: Role }) {
           icon={<Percent className="h-4 w-4 text-muted-foreground" />}
           subValue={`${data.conversionRate.won} won / ${data.conversionRate.total} total leads`}
         />
-
         <KpiCard
           label="Overdue reminders"
           value={data.overdueRemindersCount}
@@ -75,22 +106,34 @@ export function DashboardPageClient({ role }: { role: Role }) {
         />
       </div>
 
-      <div className={cn("grid gap-4", secondRowGridStyle)}>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ByStageBreakdown data={data.totalLeadsByStage} />
-        {data.topAgents ? (<Card>
+        <ByStatusBreakdown data={data.totalLeadsByStatus} />
+      </div>
+
+      {data.topAgents ? (
+        <Card>
           <CardHeader>
             <CardTitle>Top Performing Agents</CardTitle>
-            <CardContent>
-              {data.topAgents.map((agent) => (
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data.topAgents.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No agents to show yet.
+              </p>
+            ) : (
+              data.topAgents.map((agent) => (
                 <div key={agent.id} className="flex flex-col gap-1">
                   <p className="text-sm font-medium">{agent.name}</p>
-                  <p className="text-xs text-muted-foreground">Won {agent.wonCount} of {agent.leadsCount} leads</p>
+                  <p className="text-xs text-muted-foreground">
+                    Won {agent.wonCount} of {agent.leadsCount} leads
+                  </p>
                 </div>
-              ))}
-            </CardContent>
-          </CardHeader>
-        </Card>) : <></>}
-      </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }
