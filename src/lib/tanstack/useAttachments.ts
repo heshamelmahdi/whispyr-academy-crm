@@ -54,3 +54,27 @@ export function useUploadAttachment(leadId: string) {
     },
   });
 }
+
+// ------------------------------------------------------------------
+// DELETE (Mutation)
+// ------------------------------------------------------------------
+export function useDeleteAttachment(leadId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ id: string }, Error, string>({
+    mutationFn: async (attachmentId) => {
+      const { data } = await api.delete(
+        `/leads/${leadId}/attachments/${attachmentId}`,
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: attachmentsQueryKey(leadId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activities"],
+      });
+    },
+  });
+}

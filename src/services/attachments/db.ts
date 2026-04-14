@@ -27,6 +27,7 @@ export async function dbFindAttachmentById(id: string) {
     where: { id },
     select: {
       id: true,
+      leadId: true,
       fileName: true,
       mimeType: true,
       sizeBytes: true,
@@ -68,5 +69,13 @@ export function dbCreateAttachment(
     select: {
       id: true,
     },
+  });
+}
+
+export function dbDeleteAttachment(id: string, tx?: Prisma.TransactionClient) {
+  const client = tx ?? prisma;
+  return client.attachment.delete({
+    where: { id },
+    select: { id: true },
   });
 }

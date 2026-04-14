@@ -5,6 +5,8 @@ import {
 } from "@/lib/supabase/storage";
 import {
   dbCreateAttachment,
+  dbDeleteAttachment,
+  dbFindAttachmentById,
   dbGetLeadById,
   dbListAttachmentsForLead,
 } from "./db";
@@ -105,14 +107,17 @@ export async function uploadForLead(input: {
         tx,
       );
 
-      await ActivityService.create([
-        {
-          actorId: userSnapshot.id,
-          leadId,
-          type: ActivityType.ATTACHMENT_ADDED,
-          content: `Uploaded attachment: ${file.name}`,
-        },
-      ]);
+      await ActivityService.create(
+        [
+          {
+            actorId: userSnapshot.id,
+            leadId,
+            type: ActivityType.ATTACHMENT_ADDED,
+            content: `Uploaded attachment: ${file.name}`,
+          },
+        ],
+        tx,
+      );
 
       return attachment;
     });
@@ -123,4 +128,50 @@ export async function uploadForLead(input: {
     await deleteLeadAttachment(storagePath);
     throw new AttachmentServiceError("Failed to upload attachment", 500);
   }
+}
+
+// ------------------------------------------------------------------
+// DELETE FOR LEAD
+// ------------------------------------------------------------------
+/**
+ * Delete an attachment that belongs to a specific lead. Storage object
+ * is removed first (the harder operation to undo), then the DB row +
+ * the activity log entry commit atomically.
+ */
+export async function deleteForLead(input: {
+  leadId: string;
+  attachmentId: string;
+  userSnapshot: UserSnapshot;
+}) {
+  const { leadId, attachmentId, userSnapshot } = input;
+
+  const existing = await dbFindAttachmentById(attachmentId);
+
+  // Cross-lead probing returns 404, not 403, so attachment ids don't
+  // leak across lead boundaries.
+  if (!existing || existing.leadId !== leadId) {
+    throw new AttachmentServiceError("Attachment not found", 404);
+  }
+
+  // Storage first: rolling back a DB delete is easier than recreating
+  // a deleted file.
+  await deleteLeadAttachment(existing.storagePath);
+
+  await prisma.$transaction(async (tx) => {
+    await dbDeleteAttachment(attachmentId, tx);
+
+    await ActivityService.create(
+      [
+        {
+          actorId: userSnapshot.id,
+          leadId,
+          type: ActivityType.ATTACHMENT_DELETED,
+          content: `Deleted attachment: ${existing.fileName}`,
+        },
+      ],
+      tx,
+    );
+  });
+
+  return { id: attachmentId };
 }
